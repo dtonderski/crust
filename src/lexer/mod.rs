@@ -3,6 +3,9 @@ pub mod token;
 use crate::lexer::token::{Token, TokenKind};
 use std::{fmt, num::ParseIntError};
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug)]
 pub enum LexError {
     InvalidNumber(std::num::ParseIntError),

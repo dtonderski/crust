@@ -7,6 +7,10 @@ use crate::{
 
 pub mod ast;
 
+#[cfg(test)]
+mod tests;
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum ParseError {
     UnexpectedEnd,
     UnexpectedToken {
@@ -27,6 +31,7 @@ impl fmt::Display for ParseError {
 }
 
 // Needed because the TokenKind enum includes data
+#[derive(Debug, PartialEq, Eq)]
 pub enum ExpectedToken {
     Int,
     Return,

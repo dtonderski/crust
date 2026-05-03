@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TokenKind {
     Int,
     Return,
@@ -19,7 +19,7 @@ pub enum TokenKind {
     Void,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Token {
     pub kind: TokenKind,
 }
