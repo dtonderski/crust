@@ -7,6 +7,7 @@ use std::num::ParseIntError;
 pub enum LexError {
     InvalidNumber(std::num::ParseIntError),
     UnexpectedChar(char),
+    UnterminatedBlockComment,
 }
 
 impl From<ParseIntError> for LexError {
@@ -26,6 +27,34 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
         match c {
             ' ' | '\n' | '\r' | '\t' => {
                 i += 1;
+            }
+            '/' => {
+                if i + 1 >= chars.len() {
+                    return Err(LexError::UnexpectedChar(c));
+                }
+
+                match chars[i + 1] {
+                    '/' => {
+                        i += 2;
+                        while i < chars.len() && chars[i] != '\n' {
+                            i += 1;
+                        }
+                    }
+                    '*' => {
+                        i += 2;
+
+                        while i + 1 < chars.len() && !(chars[i] == '*' && chars[i + 1] == '/') {
+                            i += 1;
+                        }
+
+                        if i + 1 >= chars.len() {
+                            return Err(LexError::UnterminatedBlockComment);
+                        }
+
+                        i += 2;
+                    }
+                    _ => return Err(LexError::UnexpectedChar(c)),
+                }
             }
             '(' | ')' | '{' | '}' | ';' => {
                 let kind = match c {

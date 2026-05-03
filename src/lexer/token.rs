@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TokenKind {
     Int,
     Return,
@@ -15,7 +15,7 @@ pub enum TokenKind {
     Semicolon,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
 }
