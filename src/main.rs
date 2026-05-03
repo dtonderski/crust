@@ -33,7 +33,7 @@ fn main() {
     };
 
     if let Err(err) = tokenize(&contents) {
-        eprintln!("failed to tokenize: {err:?}");
+        eprintln!("failed to tokenize: {err}");
         std::process::exit(1);
     }
 }

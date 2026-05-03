@@ -1,7 +1,7 @@
 pub mod token;
 
 use crate::lexer::token::{Token, TokenKind};
-use std::num::ParseIntError;
+use std::{fmt, num::ParseIntError};
 
 #[derive(Debug)]
 pub enum LexError {
@@ -13,6 +13,16 @@ pub enum LexError {
 impl From<ParseIntError> for LexError {
     fn from(value: ParseIntError) -> Self {
         return LexError::InvalidNumber(value);
+    }
+}
+
+impl fmt::Display for LexError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LexError::InvalidNumber(err) => write!(f, "invalid number: {err}"),
+            LexError::UnexpectedChar(c) => write!(f, "unexpected character: {c:?}"),
+            LexError::UnterminatedBlockComment => write!(f, "unterminated block comment"),
+        }
     }
 }
 
