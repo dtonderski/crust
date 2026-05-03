@@ -1,16 +1,20 @@
 mod lexer;
+mod parser;
 
 use lexer::tokenize;
+use parser::parse;
 use std::{env, fs::File, io::Read};
 
 fn main() {
     let mut args = env::args();
     let program_name = args.next().unwrap_or_else(|| "crust".to_string());
 
+    let mut should_parse = true;
     let mut file_path = None;
     for arg in args {
         match arg.as_str() {
-            "--lex" => {}
+            "--lex" => should_parse = false,
+            "--parse" => should_parse = true,
             _ if arg.starts_with("--") => {
                 eprintln!("unsupported option: {arg}");
                 std::process::exit(1);
@@ -32,9 +36,19 @@ fn main() {
         }
     };
 
-    if let Err(err) = tokenize(&contents) {
-        eprintln!("failed to tokenize: {err}");
-        std::process::exit(1);
+    let tokens = match tokenize(&contents) {
+        Ok(tokens) => tokens,
+        Err(err) => {
+            eprintln!("failed to tokenize: {err}");
+            std::process::exit(1);
+        }
+    };
+
+    if should_parse {
+        if let Err(err) = parse(&tokens) {
+            eprintln!("failed to parse: {err}");
+            std::process::exit(1);
+        }
     }
 }
 

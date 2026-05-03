@@ -116,6 +116,7 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                 let kind = match text.as_str() {
                     "int" => TokenKind::Int,
                     "return" => TokenKind::Return,
+                    "void" => TokenKind::Void,
                     _ => TokenKind::Identifier(text),
                 };
 
