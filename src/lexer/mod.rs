@@ -16,6 +16,14 @@ impl From<ParseIntError> for LexError {
     }
 }
 
+fn is_identifier_start(c: char) -> bool {
+    c.is_ascii_alphabetic() || c == '_'
+}
+
+fn is_identifier_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '_'
+}
+
 pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
     let chars: Vec<char> = source.chars().collect();
     let mut tokens: Vec<Token> = Vec::new();
@@ -75,6 +83,10 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     i += 1;
                 }
 
+                if i < chars.len() && is_identifier_start(chars[i]) {
+                    return Err(LexError::UnexpectedChar(chars[i]));
+                }
+
                 let text: String = chars[start..i].iter().collect();
                 let value = text.parse::<i64>()?;
 
@@ -82,10 +94,10 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     kind: TokenKind::Number(value),
                 })
             }
-            'a'..='z' | 'A'..='Z' | '_' => {
+            c if is_identifier_start(c) => {
                 let start = i;
 
-                while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
+                while i < chars.len() && is_identifier_char(chars[i]) {
                     i += 1;
                 }
 
