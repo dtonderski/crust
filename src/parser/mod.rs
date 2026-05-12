@@ -2,7 +2,7 @@ use std::{fmt, iter::Peekable, slice::Iter};
 
 use crate::{
     lexer::token::{Token, TokenKind},
-    parser::ast::{Constant, Expression, FunctionDeclaration, Program, Statement},
+    parser::ast::{Constant, Expression, FunctionDeclaration, Program, Statement, UnaryOperator},
 };
 
 pub mod ast;
@@ -43,6 +43,9 @@ pub enum ExpectedToken {
     RParen,
     Semicolon,
     Void,
+    Negation,
+    BitwiseComplement,
+    LogicalNegation,
     NoToken,
 }
 
@@ -59,6 +62,9 @@ impl From<&TokenKind> for ExpectedToken {
             TokenKind::RParen => ExpectedToken::RParen,
             TokenKind::Semicolon => ExpectedToken::Semicolon,
             TokenKind::Void => ExpectedToken::Void,
+            TokenKind::Negation => ExpectedToken::Negation,
+            TokenKind::BitwiseComplement => ExpectedToken::BitwiseComplement,
+            TokenKind::LogicalNegation => ExpectedToken::LogicalNegation,
         }
     }
 }
@@ -76,6 +82,10 @@ impl fmt::Display for ExpectedToken {
             ExpectedToken::RParen => write!(f, "`)`"),
             ExpectedToken::Semicolon => write!(f, "`;`"),
             ExpectedToken::Void => write!(f, "`void`"),
+            ExpectedToken::Negation => write!(f, "negation `-`"),
+            ExpectedToken::BitwiseComplement => write!(f, "bitwise complement `-`"),
+            ExpectedToken::LogicalNegation => write!(f, "logical negation `!`"),
+
             ExpectedToken::NoToken => write!(f, "<no token>"),
         }
     }
@@ -130,6 +140,24 @@ pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseE
 
     match &token.kind {
         TokenKind::Number(value) => Ok(Expression::Constant(Constant::Int(*value))),
+        TokenKind::BitwiseComplement | TokenKind::Negation | TokenKind::LogicalNegation => {
+            let inner_expression = parse_expression(tokens)?;
+            let operator = match &token.kind {
+                TokenKind::BitwiseComplement => UnaryOperator::BinaryComplement,
+                TokenKind::Negation => UnaryOperator::Negation,
+                TokenKind::LogicalNegation => UnaryOperator::LogicalNegation,
+                _ => unreachable!(),
+            };
+            return Ok(Expression::UnaryOperation {
+                operator: operator,
+                expression: Box::new(inner_expression),
+            });
+        }
+        TokenKind::LParen => {
+            let inner_expression = parse_expression(tokens)?;
+            expect_next(tokens, TokenKind::RParen)?;
+            return Ok(inner_expression);
+        }
         found => Err(ParseError::UnexpectedToken {
             expected: ExpectedToken::Number,
             found: found.clone(),

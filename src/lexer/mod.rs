@@ -77,13 +77,16 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     _ => return Err(LexError::UnexpectedChar(c)),
                 }
             }
-            '(' | ')' | '{' | '}' | ';' => {
+            '(' | ')' | '{' | '}' | ';' | '-' | '~' | '!' => {
                 let kind = match c {
                     '(' => TokenKind::LParen,
                     ')' => TokenKind::RParen,
                     '{' => TokenKind::LBrace,
                     '}' => TokenKind::RBrace,
                     ';' => TokenKind::Semicolon,
+                    '-' => TokenKind::Negation,
+                    '~' => TokenKind::BitwiseComplement,
+                    '!' => TokenKind::LogicalNegation,
                     _ => unreachable!(),
                 };
 
