@@ -18,9 +18,14 @@ pub enum TokenKind {
 
     Void,
 
-    Negation,
+    Minus,
     BitwiseComplement,
     LogicalNegation,
+
+    Addition,
+    Multiplication,
+    Division,
+    Modulo,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -41,9 +46,13 @@ impl fmt::Display for TokenKind {
             TokenKind::RParen => write!(f, "`)`"),
             TokenKind::Semicolon => write!(f, "`;`"),
             TokenKind::Void => write!(f, "`void`"),
-            TokenKind::Negation => write!(f, "negation `-`"),
+            TokenKind::Minus => write!(f, "negation `-`"),
             TokenKind::BitwiseComplement => write!(f, "bitwise complement `-`"),
             TokenKind::LogicalNegation => write!(f, "logical negation `!`"),
+            TokenKind::Addition => write!(f, "`+`"),
+            TokenKind::Multiplication => write!(f, "`*`"),
+            TokenKind::Division => write!(f, "`/`"),
+            TokenKind::Modulo => write!(f, "`%`"),
         }
     }
 }

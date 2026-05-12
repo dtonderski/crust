@@ -43,10 +43,14 @@ pub enum ExpectedToken {
     RParen,
     Semicolon,
     Void,
-    Negation,
+    Minus,
     BitwiseComplement,
     LogicalNegation,
     NoToken,
+    Addition,
+    Multiplication,
+    Division,
+    Modulo,
 }
 
 impl From<&TokenKind> for ExpectedToken {
@@ -62,9 +66,13 @@ impl From<&TokenKind> for ExpectedToken {
             TokenKind::RParen => ExpectedToken::RParen,
             TokenKind::Semicolon => ExpectedToken::Semicolon,
             TokenKind::Void => ExpectedToken::Void,
-            TokenKind::Negation => ExpectedToken::Negation,
+            TokenKind::Minus => ExpectedToken::Minus,
             TokenKind::BitwiseComplement => ExpectedToken::BitwiseComplement,
             TokenKind::LogicalNegation => ExpectedToken::LogicalNegation,
+            TokenKind::Addition => ExpectedToken::Addition,
+            TokenKind::Multiplication => ExpectedToken::Multiplication,
+            TokenKind::Division => ExpectedToken::Division,
+            TokenKind::Modulo => ExpectedToken::Modulo,
         }
     }
 }
@@ -82,9 +90,13 @@ impl fmt::Display for ExpectedToken {
             ExpectedToken::RParen => write!(f, "`)`"),
             ExpectedToken::Semicolon => write!(f, "`;`"),
             ExpectedToken::Void => write!(f, "`void`"),
-            ExpectedToken::Negation => write!(f, "negation `-`"),
+            ExpectedToken::Minus => write!(f, "minus `-`"),
             ExpectedToken::BitwiseComplement => write!(f, "bitwise complement `-`"),
             ExpectedToken::LogicalNegation => write!(f, "logical negation `!`"),
+            ExpectedToken::Addition => write!(f, "`+`"),
+            ExpectedToken::Multiplication => write!(f, "`*`"),
+            ExpectedToken::Division => write!(f, "division `/`"),
+            ExpectedToken::Modulo => write!(f, "modulo `%`"),
 
             ExpectedToken::NoToken => write!(f, "<no token>"),
         }
@@ -140,11 +152,11 @@ pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseE
 
     match &token.kind {
         TokenKind::Number(value) => Ok(Expression::Constant(Constant::Int(*value))),
-        TokenKind::BitwiseComplement | TokenKind::Negation | TokenKind::LogicalNegation => {
+        TokenKind::BitwiseComplement | TokenKind::Minus | TokenKind::LogicalNegation => {
             let inner_expression = parse_expression(tokens)?;
             let operator = match &token.kind {
                 TokenKind::BitwiseComplement => UnaryOperator::BinaryComplement,
-                TokenKind::Negation => UnaryOperator::Negation,
+                TokenKind::Minus => UnaryOperator::Negation,
                 TokenKind::LogicalNegation => UnaryOperator::LogicalNegation,
                 _ => unreachable!(),
             };

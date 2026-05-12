@@ -74,19 +74,27 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
 
                         i += 2;
                     }
-                    _ => return Err(LexError::UnexpectedChar(c)),
+                    _ => {
+                        tokens.push(Token {
+                            kind: TokenKind::Division,
+                        });
+                        i += 1;
+                    }
                 }
             }
-            '(' | ')' | '{' | '}' | ';' | '-' | '~' | '!' => {
+            '(' | ')' | '{' | '}' | ';' | '-' | '~' | '!' | '+' | '*' | '%' => {
                 let kind = match c {
                     '(' => TokenKind::LParen,
                     ')' => TokenKind::RParen,
                     '{' => TokenKind::LBrace,
                     '}' => TokenKind::RBrace,
                     ';' => TokenKind::Semicolon,
-                    '-' => TokenKind::Negation,
+                    '-' => TokenKind::Minus,
                     '~' => TokenKind::BitwiseComplement,
                     '!' => TokenKind::LogicalNegation,
+                    '+' => TokenKind::Addition,
+                    '*' => TokenKind::Multiplication,
+                    '%' => TokenKind::Modulo,
                     _ => unreachable!(),
                 };
 
