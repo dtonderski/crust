@@ -17,6 +17,14 @@ pub enum BinaryOperator {
     Modulo,
     Addition,
     Subtraction,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+    Equal,
+    NotEqual,
+    LogicalAnd,
+    LogicalOr,
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -180,7 +180,85 @@ pub fn parse_statement(tokens: &mut TokenIter<'_>) -> Result<Statement, ParseErr
 }
 
 pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
-    let mut term = parse_term(tokens)?;
+    return parse_logical_or_expression(tokens);
+}
+
+pub fn parse_logical_or_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut expression = parse_logical_and_expression(tokens)?;
+    loop {
+        if tokens.peek().map(|token| &token.kind) != Some(&TokenKind::LogicalOr) {
+            break;
+        }
+        next(tokens)?;
+        let right = parse_logical_and_expression(tokens)?;
+        expression = Expression::BinaryOperation {
+            operator: BinaryOperator::LogicalOr,
+            left: Box::new(expression),
+            right: Box::new(right),
+        };
+    }
+    return Ok(expression);
+}
+
+pub fn parse_logical_and_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut expression = parse_equality_expression(tokens)?;
+    loop {
+        if tokens.peek().map(|token| &token.kind) != Some(&TokenKind::LogicalAnd) {
+            break;
+        }
+        next(tokens)?;
+        let right = parse_equality_expression(tokens)?;
+        expression = Expression::BinaryOperation {
+            operator: BinaryOperator::LogicalAnd,
+            left: Box::new(expression),
+            right: Box::new(right),
+        };
+    }
+    return Ok(expression);
+}
+
+pub fn parse_equality_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut expression = parse_relational_expression(tokens)?;
+    loop {
+        let operator = match tokens.peek().map(|token| &token.kind) {
+            Some(TokenKind::Equal) => BinaryOperator::Equal,
+            Some(TokenKind::NotEqual) => BinaryOperator::NotEqual,
+            _ => break,
+        };
+        next(tokens)?;
+        let right = parse_relational_expression(tokens)?;
+        expression = Expression::BinaryOperation {
+            operator,
+            left: Box::new(expression),
+            right: Box::new(right),
+        };
+    }
+    return Ok(expression);
+}
+
+pub fn parse_relational_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut expression = parse_additive_expression(tokens)?;
+    loop {
+        let operator = match tokens.peek().map(|token| &token.kind) {
+            Some(TokenKind::LessThan) => BinaryOperator::LessThan,
+            Some(TokenKind::LessThanOrEqual) => BinaryOperator::LessThanOrEqual,
+            Some(TokenKind::GreaterThan) => BinaryOperator::GreaterThan,
+            Some(TokenKind::GreaterThanOrEqual) => BinaryOperator::GreaterThanOrEqual,
+            _ => break,
+        };
+        next(tokens)?;
+        let right = parse_additive_expression(tokens)?;
+        expression = Expression::BinaryOperation {
+            operator,
+            left: Box::new(expression),
+            right: Box::new(right),
+        };
+    }
+    return Ok(expression);
+}
+
+pub fn parse_additive_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut expression = parse_term(tokens)?;
     loop {
         let operator = match tokens.peek().map(|token| &token.kind) {
             Some(TokenKind::Addition) => BinaryOperator::Addition,
@@ -188,14 +266,14 @@ pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseE
             _ => break,
         };
         next(tokens)?;
-        let next_term = parse_term(tokens)?;
-        term = Expression::BinaryOperation {
+        let right = parse_term(tokens)?;
+        expression = Expression::BinaryOperation {
             operator,
-            left: Box::new(term),
-            right: Box::new(next_term),
+            left: Box::new(expression),
+            right: Box::new(right),
         };
     }
-    return Ok(term);
+    return Ok(expression);
 }
 
 pub fn parse_term(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {

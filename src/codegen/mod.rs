@@ -110,6 +110,14 @@ fn generate_binary_operation(
                 write!(buf, "\n    movl    %edx, %eax")?;
             }
         }
+        BinaryOperator::LessThan
+        | BinaryOperator::LessThanOrEqual
+        | BinaryOperator::GreaterThan
+        | BinaryOperator::GreaterThanOrEqual
+        | BinaryOperator::Equal
+        | BinaryOperator::NotEqual
+        | BinaryOperator::LogicalAnd
+        | BinaryOperator::LogicalOr => todo!(),
     }
     return Ok(buf);
 }

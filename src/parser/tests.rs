@@ -1,6 +1,6 @@
 use super::{
     ExpectedToken, ParseError,
-    ast::{Constant, Expression, FunctionDeclaration, Program, Statement},
+    ast::{BinaryOperator, Constant, Expression, FunctionDeclaration, Program, Statement},
     parse,
 };
 use crate::lexer::{token::TokenKind, tokenize};
@@ -37,6 +37,83 @@ fn parses_void_parameter_list() {
                 statement: Statement::Return(Expression::Constant(Constant::Int(3))),
             },
         }
+    );
+}
+
+#[test]
+fn parses_logical_and_comparison_precedence() {
+    let program = parse_source("int main() { return 1 == 2 || 3 != 4 && 5 <= 6; }")
+        .expect("parser should succeed");
+
+    assert_eq!(
+        program.function.statement,
+        Statement::Return(Expression::BinaryOperation {
+            operator: BinaryOperator::LogicalOr,
+            left: Box::new(Expression::BinaryOperation {
+                operator: BinaryOperator::Equal,
+                left: Box::new(Expression::Constant(Constant::Int(1))),
+                right: Box::new(Expression::Constant(Constant::Int(2))),
+            }),
+            right: Box::new(Expression::BinaryOperation {
+                operator: BinaryOperator::LogicalAnd,
+                left: Box::new(Expression::BinaryOperation {
+                    operator: BinaryOperator::NotEqual,
+                    left: Box::new(Expression::Constant(Constant::Int(3))),
+                    right: Box::new(Expression::Constant(Constant::Int(4))),
+                }),
+                right: Box::new(Expression::BinaryOperation {
+                    operator: BinaryOperator::LessThanOrEqual,
+                    left: Box::new(Expression::Constant(Constant::Int(5))),
+                    right: Box::new(Expression::Constant(Constant::Int(6))),
+                }),
+            }),
+        })
+    );
+}
+
+#[test]
+fn parses_relational_operators_below_addition() {
+    let program =
+        parse_source("int main() { return 1 + 2 < 3 * 4; }").expect("parser should succeed");
+
+    assert_eq!(
+        program.function.statement,
+        Statement::Return(Expression::BinaryOperation {
+            operator: BinaryOperator::LessThan,
+            left: Box::new(Expression::BinaryOperation {
+                operator: BinaryOperator::Addition,
+                left: Box::new(Expression::Constant(Constant::Int(1))),
+                right: Box::new(Expression::Constant(Constant::Int(2))),
+            }),
+            right: Box::new(Expression::BinaryOperation {
+                operator: BinaryOperator::Multiplication,
+                left: Box::new(Expression::Constant(Constant::Int(3))),
+                right: Box::new(Expression::Constant(Constant::Int(4))),
+            }),
+        })
+    );
+}
+
+#[test]
+fn parses_relational_operators_left_associatively() {
+    let program =
+        parse_source("int main() { return 1 < 2 > 3 >= 4; }").expect("parser should succeed");
+
+    assert_eq!(
+        program.function.statement,
+        Statement::Return(Expression::BinaryOperation {
+            operator: BinaryOperator::GreaterThanOrEqual,
+            left: Box::new(Expression::BinaryOperation {
+                operator: BinaryOperator::GreaterThan,
+                left: Box::new(Expression::BinaryOperation {
+                    operator: BinaryOperator::LessThan,
+                    left: Box::new(Expression::Constant(Constant::Int(1))),
+                    right: Box::new(Expression::Constant(Constant::Int(2))),
+                }),
+                right: Box::new(Expression::Constant(Constant::Int(3))),
+            }),
+            right: Box::new(Expression::Constant(Constant::Int(4))),
+        })
     );
 }
 

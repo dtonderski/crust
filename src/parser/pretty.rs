@@ -95,6 +95,14 @@ impl BinaryOperator {
             BinaryOperator::Modulo => "Modulo",
             BinaryOperator::Addition => "Addition",
             BinaryOperator::Subtraction => "Subtraction",
+            BinaryOperator::LessThan => "LessThan",
+            BinaryOperator::LessThanOrEqual => "LessThanOrEqual",
+            BinaryOperator::GreaterThan => "GreaterThan",
+            BinaryOperator::GreaterThanOrEqual => "GreaterThanOrEqual",
+            BinaryOperator::Equal => "Equal",
+            BinaryOperator::NotEqual => "NotEqual",
+            BinaryOperator::LogicalAnd => "LogicalAnd",
+            BinaryOperator::LogicalOr => "LogicalOr",
         }
     }
 }
