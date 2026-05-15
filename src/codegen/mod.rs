@@ -22,9 +22,7 @@ pub fn generate(program: &Program) -> Result<String, GenError> {
     let mut buf = String::new();
     write!(
         &mut buf,
-        r#"    .globl {function_name}
-{function_name}:
-{function_body}"#
+        "    .globl {function_name}\n{function_name}:\n{function_body}"
     )?;
     return Ok(buf);
 }
@@ -40,12 +38,7 @@ fn generate_statement(statement: &Statement) -> Result<String, GenError> {
     match statement {
         Statement::Return(expression) => {
             let expression = generate_expression(&expression)?;
-            write!(
-                &mut buf,
-                r#"{expression}
-    ret
-"#
-            )?;
+            write!(&mut buf, "{expression}\n    ret\n")?;
         }
     }
     return Ok(buf);
@@ -64,11 +57,7 @@ fn generate_expression(expression: &Expression) -> Result<String, GenError> {
         } => {
             let expression_string = generate_expression(&expression)?;
             let operation = generate_operation(&operator);
-            write!(
-                buf,
-                r#"{expression_string}
-{operation}"#
-            )?;
+            write!(buf, "{expression_string}\n{operation}")?;
         }
         Expression::BinaryOperation {
             operator,
@@ -79,14 +68,13 @@ fn generate_expression(expression: &Expression) -> Result<String, GenError> {
     return Ok(buf);
 }
 
-fn generate_operation(operator: &UnaryOperator) -> String {
+fn generate_operation(operator: &UnaryOperator) -> &'static str {
     return match operator {
-        UnaryOperator::Negation => "    neg     %eax".to_string(),
-        UnaryOperator::BinaryComplement => "    not     %eax".to_string(),
-        UnaryOperator::LogicalNegation => r#"    cmpl    $0, %eax
-    movl    $0, %eax
-    sete    %al"#
-            .to_string(),
+        UnaryOperator::Negation => "    neg     %eax",
+        UnaryOperator::BinaryComplement => "    not     %eax",
+        UnaryOperator::LogicalNegation => {
+            "    cmpl    $0, %eax\n    movl    $0, %eax\n    sete    %al"
+        }
     };
 }
 
@@ -94,7 +82,7 @@ fn generate_constant(constant: &Constant) -> Result<String, GenError> {
     let mut buf = String::new();
     match constant {
         Constant::Int(int) => {
-            write!(buf, r#"    movl    ${int}, %eax"#)?;
+            write!(buf, "    movl    ${int}, %eax")?;
         }
     };
     return Ok(buf);
