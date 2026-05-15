@@ -60,7 +60,7 @@ fn rejects_missing_return_expression() {
     assert_eq!(
         err,
         ParseError::UnexpectedToken {
-            expected: ExpectedToken::Number,
+            expected: ExpectedToken::Factor,
             found: TokenKind::Semicolon
         }
     );

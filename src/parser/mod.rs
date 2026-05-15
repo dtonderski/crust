@@ -2,7 +2,10 @@ use std::{fmt, iter::Peekable, slice::Iter};
 
 use crate::{
     lexer::token::{Token, TokenKind},
-    parser::ast::{Constant, Expression, FunctionDeclaration, Program, Statement, UnaryOperator},
+    parser::ast::{
+        BinaryOperator, Constant, Expression, FunctionDeclaration, Program, Statement,
+        UnaryOperator,
+    },
 };
 
 pub mod ast;
@@ -37,6 +40,7 @@ pub enum ExpectedToken {
     Return,
     Identifier,
     Number,
+    Factor,
     LBrace,
     RBrace,
     LParen,
@@ -84,6 +88,9 @@ impl fmt::Display for ExpectedToken {
             ExpectedToken::Return => write!(f, "`return`"),
             ExpectedToken::Identifier => write!(f, "identifier"),
             ExpectedToken::Number => write!(f, "number"),
+            ExpectedToken::Factor => {
+                write!(f, "number, unary operator, or parenthesized expression")
+            }
             ExpectedToken::LBrace => write!(f, "`{{`"),
             ExpectedToken::RBrace => write!(f, "`}}`"),
             ExpectedToken::LParen => write!(f, "`(`"),
@@ -148,12 +155,51 @@ pub fn parse_statement(tokens: &mut TokenIter<'_>) -> Result<Statement, ParseErr
 }
 
 pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut term = parse_term(tokens)?;
+    loop {
+        let operator = match tokens.peek().map(|token| &token.kind) {
+            Some(TokenKind::Addition) => BinaryOperator::Addition,
+            Some(TokenKind::Minus) => BinaryOperator::Subtraction,
+            _ => break,
+        };
+        next(tokens)?;
+        let next_term = parse_term(tokens)?;
+        term = Expression::BinaryOperation {
+            operator,
+            left: Box::new(term),
+            right: Box::new(next_term),
+        };
+    }
+    return Ok(term);
+}
+
+pub fn parse_term(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
+    let mut factor = parse_factor(tokens)?;
+    loop {
+        let operator = match tokens.peek().map(|token| &token.kind) {
+            Some(TokenKind::Multiplication) => BinaryOperator::Multiplication,
+            Some(TokenKind::Division) => BinaryOperator::Division,
+            Some(TokenKind::Modulo) => BinaryOperator::Modulo,
+            _ => break,
+        };
+        next(tokens)?;
+        let next_factor = parse_factor(tokens)?;
+        factor = Expression::BinaryOperation {
+            operator,
+            left: Box::new(factor),
+            right: Box::new(next_factor),
+        };
+    }
+    return Ok(factor);
+}
+
+pub fn parse_factor(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseError> {
     let token = next(tokens)?;
 
     match &token.kind {
         TokenKind::Number(value) => Ok(Expression::Constant(Constant::Int(*value))),
         TokenKind::BitwiseComplement | TokenKind::Minus | TokenKind::LogicalNegation => {
-            let inner_expression = parse_expression(tokens)?;
+            let inner_factor = parse_factor(tokens)?;
             let operator = match &token.kind {
                 TokenKind::BitwiseComplement => UnaryOperator::BinaryComplement,
                 TokenKind::Minus => UnaryOperator::Negation,
@@ -162,7 +208,7 @@ pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseE
             };
             return Ok(Expression::UnaryOperation {
                 operator: operator,
-                expression: Box::new(inner_expression),
+                expression: Box::new(inner_factor),
             });
         }
         TokenKind::LParen => {
@@ -171,7 +217,7 @@ pub fn parse_expression(tokens: &mut TokenIter<'_>) -> Result<Expression, ParseE
             return Ok(inner_expression);
         }
         found => Err(ParseError::UnexpectedToken {
-            expected: ExpectedToken::Number,
+            expected: ExpectedToken::Factor,
             found: found.clone(),
         }),
     }
@@ -194,7 +240,7 @@ fn expect_next(tokens: &mut TokenIter<'_>, expected: TokenKind) -> Result<(), Pa
 }
 
 fn is_next(tokens: &mut TokenIter<'_>, kind: TokenKind) -> Result<bool, ParseError> {
-    let token = tokens.peek().ok_or(ParseError::UnexpectedEnd)?;
+    let token = peek_next(tokens)?;
     return Ok(token.kind == kind);
 }
 
@@ -222,5 +268,10 @@ fn expect_next_end(tokens: &mut TokenIter<'_>) -> Result<(), ParseError> {
 
 fn next<'a>(tokens: &mut TokenIter<'a>) -> Result<&'a Token, ParseError> {
     let token = tokens.next().ok_or(ParseError::UnexpectedEnd)?;
+    return Ok(token);
+}
+
+fn peek_next<'a>(tokens: &mut TokenIter<'a>) -> Result<&'a Token, ParseError> {
+    let token = tokens.peek().ok_or(ParseError::UnexpectedEnd)?;
     return Ok(token);
 }

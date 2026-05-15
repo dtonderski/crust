@@ -11,12 +11,26 @@ pub enum UnaryOperator {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub enum BinaryOperator {
+    Multiplication,
+    Division,
+    Modulo,
+    Addition,
+    Subtraction,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum Expression {
     Constant(Constant),
     UnaryOperation {
         operator: UnaryOperator,
         expression: Box<Expression>,
     },
+    BinaryOperation {
+        operator: BinaryOperator,
+        left: Box<Expression>,
+        right: Box<Expression>,
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

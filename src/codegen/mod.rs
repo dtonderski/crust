@@ -57,7 +57,7 @@ fn generate_expression(expression: &Expression) -> Result<String, GenError> {
         Expression::Constant(constant) => {
             let constant = generate_constant(&constant)?;
             write!(buf, "{constant}")?;
-        },
+        }
         Expression::UnaryOperation {
             operator,
             expression,
@@ -67,8 +67,14 @@ fn generate_expression(expression: &Expression) -> Result<String, GenError> {
             write!(
                 buf,
                 r#"{expression_string}
-{operation}"#)?;
-        },
+{operation}"#
+            )?;
+        }
+        Expression::BinaryOperation {
+            operator,
+            left,
+            right,
+        } => todo!(),
     };
     return Ok(buf);
 }
@@ -79,7 +85,8 @@ fn generate_operation(operator: &UnaryOperator) -> String {
         UnaryOperator::BinaryComplement => "    not     %eax".to_string(),
         UnaryOperator::LogicalNegation => r#"    cmpl    $0, %eax
     movl    $0, %eax
-    sete    %al"#.to_string(),
+    sete    %al"#
+            .to_string(),
     };
 }
 
