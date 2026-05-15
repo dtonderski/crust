@@ -68,6 +68,24 @@ fn skips_line_and_block_comments() {
 }
 
 #[test]
+fn skips_preprocessor_directive_lines() {
+    assert_eq!(
+        kinds("#include <stdio.h>\n  #define VALUE 2\nint main() { return 2; }"),
+        vec![
+            TokenKind::Int,
+            TokenKind::Identifier("main".to_string()),
+            TokenKind::LParen,
+            TokenKind::RParen,
+            TokenKind::LBrace,
+            TokenKind::Return,
+            TokenKind::Number(2),
+            TokenKind::Semicolon,
+            TokenKind::RBrace,
+        ]
+    );
+}
+
+#[test]
 fn tokenizes_identifier_characters_after_first_character() {
     assert_eq!(
         kinds("int _main2() { return 7; }")[1],
@@ -137,6 +155,13 @@ fn rejects_unknown_character() {
     let err = tokenize("int main() { return @; }").expect_err("lexer should fail");
 
     assert!(matches!(err, LexError::UnexpectedChar('@')));
+}
+
+#[test]
+fn rejects_hash_in_code() {
+    let err = tokenize("int main() { return 1 # 2; }").expect_err("lexer should fail");
+
+    assert!(matches!(err, LexError::UnexpectedChar('#')));
 }
 
 #[test]

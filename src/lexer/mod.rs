@@ -37,6 +37,17 @@ fn is_identifier_char(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '_'
 }
 
+fn is_directive_line_start(chars: &[char], index: usize) -> bool {
+    let mut i = index;
+    while i > 0 && chars[i - 1] != '\n' {
+        i -= 1;
+        if chars[i] != ' ' && chars[i] != '\t' && chars[i] != '\r' {
+            return false;
+        }
+    }
+    return true;
+}
+
 pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
     let chars: Vec<char> = source.chars().collect();
     let mut tokens: Vec<Token> = Vec::new();
@@ -48,6 +59,15 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
         match c {
             ' ' | '\n' | '\r' | '\t' => {
                 i += 1;
+            }
+            '#' => {
+                if !is_directive_line_start(&chars, i) {
+                    return Err(LexError::UnexpectedChar(c));
+                }
+
+                while i < chars.len() && chars[i] != '\n' {
+                    i += 1;
+                }
             }
             '/' => {
                 if i + 1 >= chars.len() {
