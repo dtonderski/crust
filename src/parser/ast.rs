@@ -30,7 +30,7 @@ pub enum Expression {
         operator: BinaryOperator,
         left: Box<Expression>,
         right: Box<Expression>,
-    }
+    },
 }
 
 #[derive(Debug, PartialEq, Eq)]

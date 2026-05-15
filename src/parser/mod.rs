@@ -9,6 +9,7 @@ use crate::{
 };
 
 pub mod ast;
+mod pretty;
 
 #[cfg(test)]
 mod tests;

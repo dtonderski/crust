@@ -14,6 +14,7 @@ use std::{
 enum Stage {
     Lex,
     Parse,
+    PrettyParse,
     Codegen,
     Compile,
 }
@@ -35,6 +36,7 @@ fn run() -> Result<(), String> {
         match arg.as_str() {
             "--lex" => stage = Stage::Lex,
             "--parse" => stage = Stage::Parse,
+            "--pretty-parse" => stage = Stage::PrettyParse,
             "--codegen" => stage = Stage::Codegen,
             _ if arg.starts_with("--") => {
                 return Err(format!("unsupported option: {arg}"));
@@ -45,7 +47,7 @@ fn run() -> Result<(), String> {
 
     let Some(file_path) = file_path else {
         return Err(format!(
-            "usage: {program_name} [--lex|--parse|--codegen] <file>"
+            "usage: {program_name} [--lex|--parse|--pretty-parse|--codegen] <file>"
         ));
     };
 
@@ -61,6 +63,11 @@ fn run() -> Result<(), String> {
     let program = parse(&tokens).map_err(|err| format!("failed to parse: {err}"))?;
 
     if matches!(stage, Stage::Parse) {
+        return Ok(());
+    }
+
+    if matches!(stage, Stage::PrettyParse) {
+        print!("{}", program.pretty_print());
         return Ok(());
     }
 
