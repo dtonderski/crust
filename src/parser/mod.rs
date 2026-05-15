@@ -56,6 +56,14 @@ pub enum ExpectedToken {
     Multiplication,
     Division,
     Modulo,
+    LogicalAnd,
+    LogicalOr,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
 }
 
 impl From<&TokenKind> for ExpectedToken {
@@ -78,6 +86,14 @@ impl From<&TokenKind> for ExpectedToken {
             TokenKind::Multiplication => ExpectedToken::Multiplication,
             TokenKind::Division => ExpectedToken::Division,
             TokenKind::Modulo => ExpectedToken::Modulo,
+            TokenKind::LogicalAnd => ExpectedToken::LogicalAnd,
+            TokenKind::LogicalOr => ExpectedToken::LogicalOr,
+            TokenKind::Equal => ExpectedToken::Equal,
+            TokenKind::NotEqual => ExpectedToken::NotEqual,
+            TokenKind::LessThan => ExpectedToken::LessThan,
+            TokenKind::LessThanOrEqual => ExpectedToken::LessThanOrEqual,
+            TokenKind::GreaterThan => ExpectedToken::GreaterThan,
+            TokenKind::GreaterThanOrEqual => ExpectedToken::GreaterThanOrEqual,
         }
     }
 }
@@ -105,6 +121,14 @@ impl fmt::Display for ExpectedToken {
             ExpectedToken::Multiplication => write!(f, "`*`"),
             ExpectedToken::Division => write!(f, "division `/`"),
             ExpectedToken::Modulo => write!(f, "modulo `%`"),
+            ExpectedToken::LogicalAnd => write!(f, "`&&`"),
+            ExpectedToken::LogicalOr => write!(f, "`||`"),
+            ExpectedToken::Equal => write!(f, "`==`"),
+            ExpectedToken::NotEqual => write!(f, "`!=`"),
+            ExpectedToken::LessThan => write!(f, "`<`"),
+            ExpectedToken::LessThanOrEqual => write!(f, "`<=`"),
+            ExpectedToken::GreaterThan => write!(f, "`>`"),
+            ExpectedToken::GreaterThanOrEqual => write!(f, "`>=`"),
 
             ExpectedToken::NoToken => write!(f, "<no token>"),
         }

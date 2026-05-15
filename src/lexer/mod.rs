@@ -82,7 +82,76 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     }
                 }
             }
-            '(' | ')' | '{' | '}' | ';' | '-' | '~' | '!' | '+' | '*' | '%' => {
+            '&' => {
+                if i + 1 < chars.len() && chars[i + 1] == '&' {
+                    tokens.push(Token {
+                        kind: TokenKind::LogicalAnd,
+                    });
+                    i += 2;
+                } else {
+                    return Err(LexError::UnexpectedChar(c));
+                }
+            }
+            '|' => {
+                if i + 1 < chars.len() && chars[i + 1] == '|' {
+                    tokens.push(Token {
+                        kind: TokenKind::LogicalOr,
+                    });
+                    i += 2;
+                } else {
+                    return Err(LexError::UnexpectedChar(c));
+                }
+            }
+            '!' => {
+                if i + 1 < chars.len() && chars[i + 1] == '=' {
+                    tokens.push(Token {
+                        kind: TokenKind::NotEqual,
+                    });
+                    i += 2;
+                } else {
+                    tokens.push(Token {
+                        kind: TokenKind::LogicalNegation,
+                    });
+                    i += 1;
+                }
+            }
+            '=' => {
+                if i + 1 < chars.len() && chars[i + 1] == '=' {
+                    tokens.push(Token {
+                        kind: TokenKind::Equal,
+                    });
+                    i += 2;
+                } else {
+                    return Err(LexError::UnexpectedChar(c));
+                }
+            }
+            '<' => {
+                if i + 1 < chars.len() && chars[i + 1] == '=' {
+                    tokens.push(Token {
+                        kind: TokenKind::LessThanOrEqual,
+                    });
+                    i += 2;
+                } else {
+                    tokens.push(Token {
+                        kind: TokenKind::LessThan,
+                    });
+                    i += 1;
+                }
+            }
+            '>' => {
+                if i + 1 < chars.len() && chars[i + 1] == '=' {
+                    tokens.push(Token {
+                        kind: TokenKind::GreaterThanOrEqual,
+                    });
+                    i += 2;
+                } else {
+                    tokens.push(Token {
+                        kind: TokenKind::GreaterThan,
+                    });
+                    i += 1;
+                }
+            }
+            '(' | ')' | '{' | '}' | ';' | '-' | '~' | '+' | '*' | '%' => {
                 let kind = match c {
                     '(' => TokenKind::LParen,
                     ')' => TokenKind::RParen,
@@ -91,7 +160,6 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     ';' => TokenKind::Semicolon,
                     '-' => TokenKind::Minus,
                     '~' => TokenKind::BitwiseComplement,
-                    '!' => TokenKind::LogicalNegation,
                     '+' => TokenKind::Addition,
                     '*' => TokenKind::Multiplication,
                     '%' => TokenKind::Modulo,

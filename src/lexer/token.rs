@@ -26,6 +26,15 @@ pub enum TokenKind {
     Multiplication,
     Division,
     Modulo,
+
+    LogicalAnd,
+    LogicalOr,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -53,6 +62,14 @@ impl fmt::Display for TokenKind {
             TokenKind::Multiplication => write!(f, "`*`"),
             TokenKind::Division => write!(f, "`/`"),
             TokenKind::Modulo => write!(f, "`%`"),
+            TokenKind::LogicalAnd => write!(f, "`&&`"),
+            TokenKind::LogicalOr => write!(f, "`||`"),
+            TokenKind::Equal => write!(f, "`==`"),
+            TokenKind::NotEqual => write!(f, "`!=`"),
+            TokenKind::LessThan => write!(f, "`<`"),
+            TokenKind::LessThanOrEqual => write!(f, "`<=`"),
+            TokenKind::GreaterThan => write!(f, "`>`"),
+            TokenKind::GreaterThanOrEqual => write!(f, "`>=`"),
         }
     }
 }

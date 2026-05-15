@@ -76,6 +76,49 @@ fn tokenizes_identifier_characters_after_first_character() {
 }
 
 #[test]
+fn tokenizes_comparison_and_logical_operators() {
+    assert_eq!(
+        kinds("return a&&b||c==d!=e<f<=g>h>=i;"),
+        vec![
+            TokenKind::Return,
+            TokenKind::Identifier("a".to_string()),
+            TokenKind::LogicalAnd,
+            TokenKind::Identifier("b".to_string()),
+            TokenKind::LogicalOr,
+            TokenKind::Identifier("c".to_string()),
+            TokenKind::Equal,
+            TokenKind::Identifier("d".to_string()),
+            TokenKind::NotEqual,
+            TokenKind::Identifier("e".to_string()),
+            TokenKind::LessThan,
+            TokenKind::Identifier("f".to_string()),
+            TokenKind::LessThanOrEqual,
+            TokenKind::Identifier("g".to_string()),
+            TokenKind::GreaterThan,
+            TokenKind::Identifier("h".to_string()),
+            TokenKind::GreaterThanOrEqual,
+            TokenKind::Identifier("i".to_string()),
+            TokenKind::Semicolon,
+        ]
+    );
+}
+
+#[test]
+fn tokenizes_logical_negation_separately_from_not_equal() {
+    assert_eq!(
+        kinds("return !1 != 0;"),
+        vec![
+            TokenKind::Return,
+            TokenKind::LogicalNegation,
+            TokenKind::Number(1),
+            TokenKind::NotEqual,
+            TokenKind::Number(0),
+            TokenKind::Semicolon,
+        ]
+    );
+}
+
+#[test]
 fn rejects_identifier_immediately_after_number() {
     let err = tokenize("int main() { return 123abc; }").expect_err("lexer should fail");
 
@@ -94,4 +137,20 @@ fn rejects_unknown_character() {
     let err = tokenize("int main() { return @; }").expect_err("lexer should fail");
 
     assert!(matches!(err, LexError::UnexpectedChar('@')));
+}
+
+#[test]
+fn rejects_single_logical_and_or_assignment_tokens() {
+    assert!(matches!(
+        tokenize("return 1 & 2;"),
+        Err(LexError::UnexpectedChar('&'))
+    ));
+    assert!(matches!(
+        tokenize("return 1 | 2;"),
+        Err(LexError::UnexpectedChar('|'))
+    ));
+    assert!(matches!(
+        tokenize("return a = 1;"),
+        Err(LexError::UnexpectedChar('='))
+    ));
 }
